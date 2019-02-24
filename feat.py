@@ -1,18 +1,13 @@
 import tensorflow as tf
-import keras
 from keras.applications.resnet50 import ResNet50
 from keras.preprocessing import image
 from keras.applications.resnet50 import preprocess_input
 import numpy as np
-import matplotlib.pyplot as plt
 import sys
 from skimage import filters
 from keras import backend as K
-import time
 from merge_images import merge
 from PIL import Image
-import matplotlib.image as mpimg
-import gc
 import scipy.misc
 
 x = 100
@@ -84,14 +79,11 @@ def main(img_path1, img_path2, original_size, index, result_path=""):
     global RESIZE_SIZE, x
     RESIZE_SIZE = [x, x*original_size[0]//original_size[1]]
 
-    start = time.time()
     sess = tf.InteractiveSession()
 
     F1, img1=extra_feat(img_path1) #Features from image patch 1
-    gc.collect()
     F1=tf.square(F1)
     F2, img2=extra_feat(img_path2) #Features from image patch 2
-    gc.collect()
     F2=tf.square(F2)
     d=tf.subtract(F1,F2)
     d=tf.square(d)
@@ -102,7 +94,6 @@ def main(img_path1, img_path2, original_size, index, result_path=""):
 
     try:
         val = filters.threshold_otsu(dis[:,:])
-        #print(time.time() - start)
 
         output_photo = dis[:,:] < val
         output_photo = np.array(output_photo).astype(int) * 255
@@ -112,18 +103,9 @@ def main(img_path1, img_path2, original_size, index, result_path=""):
     
     tf.InteractiveSession.close(sess)
 
-    #plt.imshow(output_photo, cmap='gray', interpolation='bilinear')
-    #plt.axis('off')
-    #plt.tight_layout()
     result = Image.fromarray(output_photo.astype(np.uint8))
     result.save('__temp__/_foreground_{}.png'.format(index))
-    #plt.savefig('__temp__/_foreground_{}.png'.format(index))
-    #plt.imshow(image.array_to_img(img1), cmap='gray', interpolation='bilinear')
-    #plt.axis('off')
-    #plt.tight_layout()
-    result = Image.fromarray(img1.astype(np.uint8))
-    result.save('__temp__/_background_{}.png'.format(index))
-    #plt.savefig('__temp__/_background_{}.png'.format(index))
+    scipy.misc.imsave('__temp__/_background_{}.png'.format(index), img1)
     output_photo = merge(Image.open('__temp__/_background_{}.png'.format(index)), Image.open('__temp__/_foreground_{}.png'.format(index)))
 
     return output_photo

@@ -1,14 +1,10 @@
 import sys
-from PyQt5.QtWidgets import (QMainWindow, QCheckBox, QWidget, QToolTip, 
-							QPushButton, QInputDialog, QLabel, QFileDialog, QApplication,
-							QPlainTextEdit, QStatusBar, QHBoxLayout, QVBoxLayout)
+from PyQt5.QtWidgets import (QCheckBox, QWidget, 
+							QPushButton, QFileDialog, QApplication,
+							QPlainTextEdit, QHBoxLayout, QVBoxLayout)
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QImage, QPalette, QBrush
-from feat import main
-import time
-from photo_spliter import slice_image
-import matplotlib.pyplot as plt
-from image_slicer import join, Tile
+from completeness import run_detection
 
 class ChangeDetectorApp(QWidget):
     
@@ -16,7 +12,7 @@ class ChangeDetectorApp(QWidget):
 	image2 = ""
 	result_path = ""
 	AppSize = (600, 300)
-	NUMBER_OF_SLICES = 12
+	NUMBER_OF_SLICES = 9
 
 	def __init__(self):
 		super().__init__()
@@ -111,22 +107,8 @@ class ChangeDetectorApp(QWidget):
 			self.output.insertPlainText("! Error: Enter second image\n")
 		else:
 			self.output.insertPlainText(">>> Detection Started\n")
-			slices_of_img1 = slice_image(self.image1, self.NUMBER_OF_SLICES, 'slices_of_img1')
-			slices_of_img2 = slice_image(self.image2, self.NUMBER_OF_SLICES, 'slices_of_img2')
-			new_slices = []
-			slice_index = 1
-			for img1, img2 in zip(slices_of_img1, slices_of_img2):
-				output_photo = main(img1.filename, img2.filename, self.result_path)
-				new_slices.append(Tile(output_photo, img1.number, img1.position, img1.coords))
-				print('slice [{}/{}] processed'.format(slice_index, self.NUMBER_OF_SLICES))
-				slice_index += 1
-				del(output_photo)
-			
-			image = join(tuple(new_slices))
-			image.save('output.png')
-			image.show()
-			#self.output.insertPlainText(">>> Detection Finished in {} seconds\n".format(time.time() - start))
-
+			run_detection(self.image1, self.image2, self.NUMBER_OF_SLICES)
+            
 	def openFile1NameDialog(self):
 		options = QFileDialog.Options()
 		options |= QFileDialog.DontUseNativeDialog

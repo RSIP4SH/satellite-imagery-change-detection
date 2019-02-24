@@ -3,6 +3,8 @@ Detect unstructured changes in satellite images
 
 This program detect changes in satellite(maybe any other) image using deep learning ResNet50 architecture.
 
+#### Usage: python3 detectUI.py 
+
 Original image:
 ![link](https://github.com/soroushhashemifar/satellite-imagery-change-detection/blob/master/sen2_2018_dataset_bm1_qua_bm2.jpg)
 
